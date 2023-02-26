@@ -8,4 +8,10 @@
 - Postgres
 
 ## Фронт
-Код фронта взят из https://github.com/skypro-008/todo-list-frontend.git
+Код фронта: sermalenk/skypro-front:lesson-34
+
+## Суперюзер ip 51.250.1.113
+mvladlena/Qwerty123
+deploy/MV85ld07
+
+

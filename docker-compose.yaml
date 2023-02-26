@@ -17,8 +17,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-#      migrations:
-#        condition: service_completed_successfully
+      migrations:
+        condition: service_completed_successfully
     volumes:
       - ./.env:/api/.env
     environment:
