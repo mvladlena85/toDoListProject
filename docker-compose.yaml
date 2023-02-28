@@ -22,7 +22,7 @@ services:
     volumes:
       - ./.env:/api/.env
     environment:
-      DB_HOST: postgres
+      DATABASE_URL: ${DATABASE_URL}
     ports:
       - "8000:8000"
 
