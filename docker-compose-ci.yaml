@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  front:
+    image: sermalenk/skypro-front:lesson-34
+    restart: always
+    ports:
+      - "82:80"
+    depends_on:
+      - api
+    volumes:
+      - front:/app/build
+
+  api:
+    image: mvladlena85/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    volumes:
+      - ./.env:/api/.env
+    environment:
+      DATABASE_URL: $DATABASE_URL
+    ports:
+      - "8000:8000"
+
+  migrations:
+    image: mvladlena85/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+#    environment:
+#      DB_HOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./.env:/api/.env
+    command: python manage.py migrate
+
+  postgres:
+    image: postgres:12.4-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_DATABASE
+      POSTGRES_HOST: $DB_HOST
+    restart: always
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -U $DB_USER -d $DB_DATABASE
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres_data:
+  front:
