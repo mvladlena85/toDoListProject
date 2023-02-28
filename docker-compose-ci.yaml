@@ -29,7 +29,8 @@ services:
   migrations:
     image: mvladlena85/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
     environment:
-      DB_HOST: $DB_HOST
+      DATABASE_URL: $DATABASE_URL
+      SECRET_KEY: $DJANGO_SECRET_KEY
     depends_on:
       postgres:
         condition: service_healthy
