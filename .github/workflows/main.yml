@@ -38,7 +38,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           # Указываем, какие файлы копировать
-          source: "deploy/docker-compose.yaml"
+          source: "deploy/docker-compose.yaml,deploy/.env"
           # Место на виртуальной машине, куда скопируются файлы
           target: "deploy"
           strip_components: 1
