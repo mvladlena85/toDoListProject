@@ -13,7 +13,6 @@ services:
 
   api:
     image: mvladlena85/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
-    env_file: .env
     depends_on:
       postgres:
         condition: service_healthy
