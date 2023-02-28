@@ -28,8 +28,8 @@ services:
 
   migrations:
     image: mvladlena85/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
-#    environment:
-#      DB_HOST: postgres
+    environment:
+      DB_HOST: $DB_HOST
     depends_on:
       postgres:
         condition: service_healthy
