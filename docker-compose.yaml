@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   front:
@@ -8,8 +8,6 @@ services:
       - "82:80"
     depends_on:
       - api
-    volumes:
-      - front:/app/build
 
   api:
     build: .
@@ -29,13 +27,12 @@ services:
   migrations:
     build:
       context: .
+    env_file: .env
     environment:
-      DB_HOST: postgres
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./.env:/api/.env
     command: python manage.py migrate
 
   postgres:
@@ -46,10 +43,9 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_HOST: ${DB_HOST}
     restart: always
-    ports:
-      - "5432:5432"
+    expose:
+      - ${DB_PORT}
     healthcheck:
       test: pg_isready -U ${DB_USER} -d ${DB_DATABASE}
       interval: 5s
@@ -58,4 +54,3 @@ services:
 
 volumes:
   postgres_data:
-  front:

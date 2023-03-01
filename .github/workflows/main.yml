@@ -6,7 +6,7 @@ jobs:
     steps:
       # Копируем код из репозитория в runner
       - name: clone code 
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
      # Собираем
       - name: docker build
         run: docker build -t mvladlena85/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID .
@@ -26,7 +26,7 @@ jobs:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
     steps:
       - name: clone code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: render configs
         run: |
           mkdir deploy
@@ -61,4 +61,4 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            docker system prune -a -f      
+            echo ${{ secrets.SSH_PASSWORD }} | docker system prune -a -f      
