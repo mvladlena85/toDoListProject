@@ -61,6 +61,5 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd deploy
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker system prune -a -f
             
