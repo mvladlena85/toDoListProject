@@ -44,6 +44,17 @@ jobs:
           # Место на виртуальной машине, куда скопируются файлы
           target: "deploy"
           strip_components: 1
+      - name: clone files to server part 2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          # Указываем, какие файлы копировать
+          source: "nginx.conf"
+          # Место на виртуальной машине, куда скопируются файлы
+          target: "deploy"
+          strip_components: 1
       - name: run docker-compose
         uses: appleboy/ssh-action@master
         with:
