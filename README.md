@@ -13,5 +13,6 @@
 ## Суперюзер ip 51.250.1.113
 mvladlena/Qwerty123
 deploy/MV85ld07
+skypro/Qawsedr123
 
 
