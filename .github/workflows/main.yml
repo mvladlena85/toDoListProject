@@ -25,7 +25,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       VK_OAUTH2_KEY: ${{ secrets.VK_OAUTH2_KEY }}
-      $VK_OAUTH2_SECRET: ${{ secrets.$VK_OAUTH2_SECRET }}
+      VK_OAUTH2_SECRET: ${{ secrets.$VK_OAUTH2_SECRET }}
     steps:
       - name: clone code
         uses: actions/checkout@v3
