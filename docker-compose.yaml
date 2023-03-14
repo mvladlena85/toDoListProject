@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   front:
-    image: sermalenk/skypro-front:lesson-34
+    image: sermalenk/skypro-front:lesson-36
     restart: always
     ports:
       - "82:80"
@@ -38,8 +38,7 @@ services:
 
 
   migrations:
-    build:
-      context: .
+    build: .
     env_file: .env
     environment:
       DATABASE_URL: ${DATABASE_URL}

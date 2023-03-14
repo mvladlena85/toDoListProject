@@ -16,10 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from toDoListProject import core
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('core/', include('toDoListProject.core.urls')),
     path("oauth/", include('social_django.urls', namespace="social")),
+    path("goals/", include("toDoListProject.goals.urls")),
 ]
