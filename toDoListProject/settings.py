@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     # 3rd party
     'rest_framework',
     'social_django',
+    'django_filters',
     # 1st party
     'toDoListProject.core',
     'toDoListProject.goals',
