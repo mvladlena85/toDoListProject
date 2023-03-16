@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from toDoListProject.core.serializers import UserSerializer
-from toDoListProject.goals.models import GoalCategory, Goal
+from toDoListProject.goals.models import GoalCategory, Goal, GoalComment
 
 
 class GoalCategoryCreateSerializer(serializers.ModelSerializer):
@@ -47,3 +47,21 @@ class GoalSerializer(serializers.ModelSerializer):
         model = Goal
         fields = "__all__"
         read_only_fields = ("id", "created", "updated", "user")
+
+
+class GoalCommentCreateSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = GoalComment
+        fields = "__all__"
+        read_only_fields = ("id", "created", "updated", "user")
+
+
+class GoalCommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = GoalComment
+        fields = "__all__"
+        read_only_fields = ("id", "created", "updated", "user", "goal")
