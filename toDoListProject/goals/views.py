@@ -4,9 +4,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import permissions, filters
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
 from toDoListProject.goals.filters import GoalDateFilter
-from toDoListProject.goals.models import GoalCategory, Goal, GoalComment, Board
+from toDoListProject.goals.models import GoalCategory, Goal, GoalComment, Board, BoardParticipant
 from toDoListProject.goals.permissions import BoardPermissions
 from toDoListProject.goals.serializers import GoalCreateSerializer, GoalCategorySerializer, \
     GoalCategoryCreateSerializer, GoalSerializer, GoalCommentCreateSerializer, GoalCommentSerializer, \
@@ -67,17 +68,18 @@ class GoalCategoryListView(ListAPIView):
     serializer_class = GoalCategorySerializer
     pagination_class = LimitOffsetPagination
     filter_backends = [
+        DjangoFilterBackend,
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
+    filterset_fields = ["board"]
     ordering_fields = ["title", "created"]
     ordering = ["title"]
     search_fields = ["title"]
 
     def get_queryset(self):
-        return GoalCategory.objects.filter(
-            user=self.request.user, is_deleted=False
-        )
+        return GoalCategory.objects.prefetch_related("board__participants").\
+            filter(board__participants__user_id=self.request.user.id, is_deleted=False)
 
 
 class GoalCategoryView(RetrieveUpdateDestroyAPIView):
@@ -86,7 +88,22 @@ class GoalCategoryView(RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return GoalCategory.objects.filter(user=self.request.user, is_deleted=False)
+        return GoalCategory.objects.prefetch_related("board__participants").\
+            filter(board__participants__user_id=self.request.user.id,
+                   is_deleted=False)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        board_id = GoalCategory.objects.get(id=kwargs["pk"]).board_id
+        role = BoardParticipant.objects.get(board_id=board_id, user_id=request.user.id).role
+        if role == BoardParticipant.Role.reader:
+            raise permissions.exceptions.PermissionDenied
+        else:
+            self.perform_update(serializer)
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         instance.is_deleted = True

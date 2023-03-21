@@ -14,6 +14,16 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated", "user")
         fields = "__all__"
 
+    def validate_board(self, value: Board) -> Board:
+        if value.is_deleted:
+            raise serializers.ValidationError('not allowed in deleted board')
+
+        if not BoardParticipant.objects.filter(board_id=value.pk,
+                                               user_id=self.context["request"].user.id,
+                                               role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]):
+            raise serializers.ValidationError("Permission Denied")
+        return value
+
 
 class GoalCategorySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -21,7 +31,7 @@ class GoalCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalCategory
         fields = "__all__"
-        read_only_fields = ("id", "created", "updated", "user")
+        read_only_fields = ("id", "created", "updated", "user", "board")
 
 
 class GoalCreateSerializer(serializers.ModelSerializer):
@@ -32,7 +42,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated", "user")
         fields = "__all__"
 
-    def validate_category(self, value):
+    def validate_category(self, value: Goal) -> Goal:
         if value.is_deleted:
             raise serializers.ValidationError("not allowed in deleted category")
 
