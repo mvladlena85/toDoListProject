@@ -8,7 +8,8 @@ from rest_framework.response import Response
 
 from toDoListProject.goals.filters import GoalDateFilter
 from toDoListProject.goals.models import GoalCategory, Goal, GoalComment, Board, BoardParticipant
-from toDoListProject.goals.permissions import BoardPermissions
+from toDoListProject.goals.permissions import BoardPermissions, GoalPermission, IsOwnerOrReadOnly, \
+    CommentCreatePermission
 from toDoListProject.goals.serializers import GoalCreateSerializer, GoalCategorySerializer, \
     GoalCategoryCreateSerializer, GoalSerializer, GoalCommentCreateSerializer, GoalCommentSerializer, \
     BoardCreateSerializer, BoardSerializer, BoardListSerializer
@@ -61,6 +62,13 @@ class GoalCategoryCreateView(CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = GoalCategoryCreateSerializer
 
+    def create(self, request, *args, **kwargs):
+        role = BoardParticipant.objects.get(board_id=request.data["board"], user_id=request.user.id).role
+        if role == BoardParticipant.Role.reader:
+            raise permissions.exceptions.PermissionDenied
+        else:
+            return super().create(self, request, *args, **kwargs)
+
 
 class GoalCategoryListView(ListAPIView):
     model = GoalCategory
@@ -93,17 +101,12 @@ class GoalCategoryView(RetrieveUpdateDestroyAPIView):
                    is_deleted=False)
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
         board_id = GoalCategory.objects.get(id=kwargs["pk"]).board_id
         role = BoardParticipant.objects.get(board_id=board_id, user_id=request.user.id).role
         if role == BoardParticipant.Role.reader:
             raise permissions.exceptions.PermissionDenied
         else:
-            self.perform_update(serializer)
-        return Response(serializer.data)
+            return super().update(self, request, *args, **kwargs)
 
     def perform_destroy(self, instance):
         instance.is_deleted = True
@@ -113,7 +116,7 @@ class GoalCategoryView(RetrieveUpdateDestroyAPIView):
 
 class GoalCreateView(CreateAPIView):
     model = Goal
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [GoalPermission]
     serializer_class = GoalCreateSerializer
 
 
@@ -134,7 +137,7 @@ class GoalListView(ListAPIView):
 
     def get_queryset(self):
         return Goal.objects.filter(
-            Q(user=self.request.user)
+            Q(category__board__participants__user_id=self.request.user.id)
             & ~Q(status=Goal.Status.archived)
             & Q(category__is_deleted=False)
         )
@@ -143,7 +146,7 @@ class GoalListView(ListAPIView):
 class GoalView(RetrieveUpdateDestroyAPIView):
     model = Goal
     serializer_class = GoalSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [GoalPermission]
 
     def get_queryset(self):
         return Goal.objects.filter(
@@ -159,13 +162,13 @@ class GoalView(RetrieveUpdateDestroyAPIView):
 
 class GoalCommentCreateView(CreateAPIView):
     model = GoalComment
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [CommentCreatePermission]
     serializer_class = GoalCommentCreateSerializer
 
 
 class GoalCommentListView(ListAPIView):
     model = GoalComment
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = GoalCommentSerializer
     pagination_class = LimitOffsetPagination
     filter_backends = [
@@ -176,14 +179,14 @@ class GoalCommentListView(ListAPIView):
 
     def get_queryset(self):
         return GoalComment.objects.filter(
-            user=self.request.user
+            goal__category__board__participants__user_id=self.request.user.id,
         )
 
 
 class GoalCommentView(RetrieveUpdateDestroyAPIView):
     model = GoalComment
     serializer_class = GoalCommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
         return GoalComment.objects.filter(user=self.request.user)

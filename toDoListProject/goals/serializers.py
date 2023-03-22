@@ -15,9 +15,6 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate_board(self, value: Board) -> Board:
-        if value.is_deleted:
-            raise serializers.ValidationError('not allowed in deleted board')
-
         if not BoardParticipant.objects.filter(board_id=value.pk,
                                                user_id=self.context["request"].user.id,
                                                role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]):
