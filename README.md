@@ -8,10 +8,10 @@
 - Postgres
 
 ## Фронт
-Код фронта: sermalenk/skypro-front:lesson-34
+Код фронта: sermalenk/skypro-front:lesson-38
 
 ## Суперюзер ip 51.250.1.113
-mvladlena/Qwerty123
+mvladlena/Qwerty123^456
 deploy/MV85ld07
 skypro/Qawsedr123
 

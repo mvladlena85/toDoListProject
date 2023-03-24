@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework import permissions, filters
+from rest_framework import permissions, filters, status
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
@@ -63,11 +63,12 @@ class GoalCategoryCreateView(CreateAPIView):
     serializer_class = GoalCategoryCreateSerializer
 
     def create(self, request, *args, **kwargs):
+        request = request
         role = BoardParticipant.objects.get(board_id=request.data["board"], user_id=request.user.id).role
         if role == BoardParticipant.Role.reader:
             raise permissions.exceptions.PermissionDenied
         else:
-            return super().create(self, request, *args, **kwargs)
+            return super().create(request, *args, **kwargs)
 
 
 class GoalCategoryListView(ListAPIView):
@@ -106,7 +107,7 @@ class GoalCategoryView(RetrieveUpdateDestroyAPIView):
         if role == BoardParticipant.Role.reader:
             raise permissions.exceptions.PermissionDenied
         else:
-            return super().update(self, request, *args, **kwargs)
+            return super().update(request, *args, **kwargs)
 
     def perform_destroy(self, instance):
         instance.is_deleted = True
