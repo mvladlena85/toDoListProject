@@ -22,4 +22,5 @@ urlpatterns = [
     path('core/', include('toDoListProject.core.urls')),
     path("oauth/", include('social_django.urls', namespace="social")),
     path("goals/", include("toDoListProject.goals.urls")),
+    path("bot/", include("toDoListProject.bot.urls")),
 ]

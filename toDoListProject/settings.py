@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # 1st party
     'toDoListProject.core',
     'toDoListProject.goals',
+    'toDoListProject.bot',
 
 ]
 
@@ -158,3 +159,5 @@ AUTHENTICATION_BACKENDS = (
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
+
+BOT_TOKEN = env('BOT_TOKEN')
