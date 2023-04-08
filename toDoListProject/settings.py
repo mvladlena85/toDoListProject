@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'social_django',
     'django_filters',
+    'django_extensions',
     # 1st party
     'toDoListProject.core',
     'toDoListProject.goals',
@@ -160,4 +161,5 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
 
+# Bot settings
 BOT_TOKEN = env('BOT_TOKEN')

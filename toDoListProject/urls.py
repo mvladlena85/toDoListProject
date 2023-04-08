@@ -19,8 +19,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('core/', include('toDoListProject.core.urls')),
+    path('core/', include('toDoListProject.core.urls', namespace="users")),
     path("oauth/", include('social_django.urls', namespace="social")),
-    path("goals/", include("toDoListProject.goals.urls")),
-    path("bot/", include("toDoListProject.bot.urls")),
+    path("goals/", include("toDoListProject.goals.urls", namespace="goals")),
+    path("bot/", include("toDoListProject.bot.urls", namespace="telegram_bot")),
 ]
