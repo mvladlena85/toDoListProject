@@ -115,12 +115,13 @@ class BoardSerializer(serializers.ModelSerializer):
     def update(self, instance: Board, validated_data: dict):
         with transaction.atomic():
             instance.participants.exclude(user=self.context["request"].user).delete()
-            for participant in validated_data["participants"]:
-                BoardParticipant.objects.create(
-                    user_id=participant["user"].id,
-                    role=participant["role"],
-                    board_id=instance.pk
-                )
+            if 'participants' in validated_data.keys():
+                for participant in validated_data["participants"]:
+                    BoardParticipant.objects.create(
+                        user_id=participant["user"].id,
+                        role=participant["role"],
+                        board_id=instance.pk
+                    )
 
             if validated_data["title"]:
                 instance.title = validated_data["title"]
