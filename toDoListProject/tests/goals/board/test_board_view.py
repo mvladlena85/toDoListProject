@@ -94,6 +94,9 @@ class TestBoardView:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_fail_to_delete_board_by_non_author(self, client, user_factory):
+        """
+        Не создатель доски не может ее удалить
+        """
         user = user_factory.create()
         client.force_login(user)
         response = client.delete(self.url)
@@ -101,6 +104,9 @@ class TestBoardView:
 
     @pytest.mark.parametrize("role", [BoardParticipant.Role.writer, BoardParticipant.Role.reader])
     def test_fail_to_delete_board_by_writer_or_reader(self, client, user_factory, board, role):
+        """
+        Пользователи доски с ролями writer и reader не могут ее удалить
+        """
         user = user_factory.create()
         board_participant = BoardParticipant(user_id=user.pk, board_id=board.pk,
                                              role=role)
@@ -110,16 +116,25 @@ class TestBoardView:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_author_can_delete_board(self, auth_client):
+        """
+        Создатель доски может ее удалить
+        """
         response = auth_client.delete(self.url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_category_marked_deleted_when_board_is_deleted(self, auth_client, board, user, category_factory):
+        """
+        При удалении доски, ее категории помечаются is_deleted = True
+        """
         category_factory.create(board=board, user=user)
         response = auth_client.delete(self.url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert GoalCategory.objects.get(board_id=board.pk).is_deleted is True
 
     def test_goal_marked_archived_when_board_is_deleted(self, auth_client, board, user, category_factory, goal_factory):
+        """
+        При удалении доски ее цели получают статус archived
+        """
         category = category_factory.create(board=board, user=user)
         goal_factory.create_batch(5, category=category, user=user)
         response = auth_client.delete(self.url)
@@ -127,4 +142,25 @@ class TestBoardView:
         for state in Goal.objects.filter(category=category):
             assert state.status == Goal.Status.archived
 
-    # TODO: test PUT method
+    def test_assign_new_users_to_the_board(self, auth_client, client, board, user_factory):
+        """
+        Создатель доски может расшарить доску для других пользователей
+        """
+        user = user_factory.create()
+        data = {
+            'title': board.title,
+            'participants':
+                [
+                    {
+                        'role': 2,
+                        'user': user.username
+                    }
+                ],
+        }
+        response = auth_client.put(self.url, data=data)
+        print(response.json())
+        assert response.status_code == status.HTTP_200_OK
+        client.force_login(user)
+        response2 = client.get(self.url)
+        assert response2.status_code == status.HTTP_200_OK
+        assert response.json()['title'] == board.title

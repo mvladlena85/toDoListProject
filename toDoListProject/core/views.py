@@ -1,7 +1,5 @@
 from django.contrib.auth import login, authenticate, logout
-from django.shortcuts import render
 
-# Create your views here.
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 
@@ -11,10 +9,16 @@ from toDoListProject.core.serializers import CreateUserSerializer, LoginSerializ
 
 
 class UserRegistrationView(generics.CreateAPIView):
+    """
+    View для регистрации (создания пользователя в системе) пользователя
+    """
     serializer_class = CreateUserSerializer
 
 
 class LoginView(generics.CreateAPIView):
+    """
+    View для авторизации пользователя
+    """
     serializer_class = LoginSerializer
 
     def create(self, request, *args, **kwargs):
@@ -26,6 +30,9 @@ class LoginView(generics.CreateAPIView):
 
 
 class UpdateUserView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    View для получения, обновления данных пользователя и логаута
+    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
@@ -38,6 +45,7 @@ class UpdateUserView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PasswordUpdateView(generics.UpdateAPIView):
+    """View для смены пароля"""
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UpdatePasswordSerializer
     model = User

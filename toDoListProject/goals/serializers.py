@@ -7,6 +7,9 @@ from toDoListProject.goals.models import GoalCategory, Goal, GoalComment, Board,
 
 
 class GoalCategoryCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для создания категории
+    """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -15,6 +18,9 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate_board(self, value: Board) -> Board:
+        """
+        Проверка прав пользователя перед созданием категории
+        """
         if not BoardParticipant.objects.filter(board_id=value.pk,
                                                user_id=self.context["request"].user.id,
                                                role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]):
@@ -23,6 +29,9 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
 
 
 class GoalCategorySerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для отображения категорий
+    """
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -32,6 +41,9 @@ class GoalCategorySerializer(serializers.ModelSerializer):
 
 
 class GoalCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для создания цели
+    """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -39,7 +51,10 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated", "user")
         fields = "__all__"
 
-    def validate_category(self, value: Goal) -> Goal:
+    def validate_category(self, value: GoalCategory) -> GoalCategory:
+        """
+        Проверка, есть ли у пользователя права на привязку цели к данной категории
+        """
         if value.is_deleted:
             raise serializers.ValidationError("not allowed in deleted category")
 
@@ -50,6 +65,9 @@ class GoalCreateSerializer(serializers.ModelSerializer):
 
 
 class GoalSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для отображения данных цели
+    """
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -59,6 +77,9 @@ class GoalSerializer(serializers.ModelSerializer):
 
 
 class GoalCommentCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для создания комментария
+    """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -68,6 +89,9 @@ class GoalCommentCreateSerializer(serializers.ModelSerializer):
 
 
 class GoalCommentSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для отображения комментария
+    """
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -77,6 +101,9 @@ class GoalCommentSerializer(serializers.ModelSerializer):
 
 
 class BoardCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для создания доски
+    """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -85,6 +112,11 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
+        """
+        При создании доски, помимо сохранения данных в БД в таблице goals_board,
+        создаем запись в таблице goals_perticiants c данными пользователя, доски
+        и роли пользователя Owner
+        """
         user = validated_data.pop("user")
         board = Board.objects.create(**validated_data)
         BoardParticipant.objects.create(
@@ -94,6 +126,9 @@ class BoardCreateSerializer(serializers.ModelSerializer):
 
 
 class BoardParticipantSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для внесения данных о доступе пользователей к доскам
+    """
     role = serializers.ChoiceField(required=True, choices=BoardParticipant.Role.choices[1:])
     user = serializers.SlugRelatedField(slug_field="username", queryset=User.objects.all())
 
@@ -104,6 +139,9 @@ class BoardParticipantSerializer(serializers.ModelSerializer):
 
 
 class BoardSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для отображения данных доски
+    """
     participants = BoardParticipantSerializer(many=True)
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -112,7 +150,11 @@ class BoardSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("id", "created", "updated")
 
-    def update(self, instance: Board, validated_data: dict):
+    def update(self, instance: Board, validated_data: dict) -> Board:
+        """
+        Обновление списка пользователей, имеющих доступ к доске и их прав,
+        изменение названия доски
+        """
         with transaction.atomic():
             instance.participants.exclude(user=self.context["request"].user).delete()
             if 'participants' in validated_data.keys():
@@ -131,6 +173,9 @@ class BoardSerializer(serializers.ModelSerializer):
 
 
 class BoardListSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для обновления списка досок
+    """
     class Meta:
         model = Board
         fields = "__all__"

@@ -8,21 +8,28 @@ from toDoListProject.core.models import User
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для регистрации пользователя
+    """
     password = PasswordField(required=True)
     password_repeat = PasswordField(required=True)
-    # password = serializers.CharField(required=True, style={'input_type': 'password'}, write_only=True)
-    # password_repeat = serializers.CharField(required=True, style={'input_type': 'password'}, write_only=True)
 
     class Meta:
         model = User
         fields = ("id", "username", "first_name", "last_name", "email", "password", "password_repeat")
 
     def validate(self, attrs: dict) -> dict:
+        """
+        Проверка на совпадение введенных паролей
+        """
         if attrs['password'] != attrs['password_repeat']:
             raise ValidationError({'password_repeat': 'Passwords must match'})
         return attrs
 
     def create(self, validated_data: dict) -> User:
+        """
+        Сохранение пользователя в БД
+        """
         validated_data['password'] = make_password(validated_data['password'])
         user = User(
             username=validated_data['username'],
@@ -36,6 +43,9 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для авторизации и аутентификации пользователя
+    """
     username = serializers.CharField(required=True)
     password = PasswordField(required=True)
 
@@ -54,23 +64,35 @@ class LoginSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для отображения данных пользователя
+    """
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "email"]
 
 
 class UpdatePasswordSerializer(serializers.Serializer):
+    """
+    Сериалайзер для смены пароля
+    """
     model = User
 
     old_password = PasswordField(required=True)
     new_password = PasswordField(required=True)
 
     def validate_old_password(self, old_password: str) -> str:
+        """
+        Проверка корректности ввода старого пароля
+        """
         if not self.instance.check_password(old_password):
             raise ValidationError('Password is incorrect')
         return old_password
 
     def update(self, instance: User, validated_data: dict) -> User:
+        """
+        Сохранение нового пароля
+        """
         instance.set_password(validated_data['new_password'])
         instance.save()
         return instance

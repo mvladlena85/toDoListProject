@@ -1,10 +1,10 @@
 from rest_framework import permissions
 
-from toDoListProject.goals.models import BoardParticipant, Goal, GoalComment
+from toDoListProject.goals.models import BoardParticipant, Goal, GoalComment, Board
 
 
 class BoardPermissions(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request, view, obj: Board):
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:

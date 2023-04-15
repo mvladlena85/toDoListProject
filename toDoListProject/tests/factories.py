@@ -1,14 +1,9 @@
 import factory
 from django.utils import timezone
 from pytest_factoryboy import register
-from faker import Factory as FakerFactory
 
 from toDoListProject.core.models import User
 from toDoListProject.goals.models import Board, BoardParticipant, GoalCategory, Goal
-
-Faker = FakerFactory.create
-fake = Faker()
-# fake.seed(0)
 
 
 @register
