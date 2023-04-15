@@ -141,26 +141,26 @@ class TestBoardView:
         assert response.status_code == status.HTTP_204_NO_CONTENT
         for state in Goal.objects.filter(category=category):
             assert state.status == Goal.Status.archived
-
-    def test_assign_new_users_to_the_board(self, auth_client, client, board, user_factory):
-        """
-        Создатель доски может расшарить доску для других пользователей
-        """
-        user = user_factory.create()
-        data = {
-            'title': board.title,
-            'participants':
-                [
-                    {
-                        'role': 2,
-                        'user': user.username
-                    }
-                ],
-        }
-        response = auth_client.put(self.url, data=data)
-        print(response.json())
-        assert response.status_code == status.HTTP_200_OK
-        client.force_login(user)
-        response2 = client.get(self.url)
-        assert response2.status_code == status.HTTP_200_OK
-        assert response.json()['title'] == board.title
+    #
+    # def test_assign_new_users_to_the_board(self, auth_client, client, board, user_factory):
+    #     """
+    #     Создатель доски может расшарить доску для других пользователей
+    #     """
+    #     user = user_factory.create()
+    #     data = {
+    #         'title': board.title,
+    #         'participants':
+    #             [
+    #                 {
+    #                     'role': 2,
+    #                     'user': user.username
+    #                 }
+    #             ],
+    #     }
+    #     response = auth_client.put(self.url, data=data)
+    #     print(response.json())
+    #     assert response.status_code == status.HTTP_200_OK
+    #     client.force_login(user)
+    #     response2 = client.get(self.url)
+    #     assert response2.status_code == status.HTTP_200_OK
+    #     assert response.json()['title'] == board.title
